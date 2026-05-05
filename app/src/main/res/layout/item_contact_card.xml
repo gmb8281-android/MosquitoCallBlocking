@@ -41,7 +41,7 @@
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="@string/remove_contact"
                 android:src="@drawable/ic_close_24dp"
-                android:tint="?attr/colorError" />
+                app:tint="?attr/colorOnSurface" />
         </LinearLayout>
 
         <!-- Linha 2: Números de telefone -->
@@ -54,61 +54,76 @@
             android:textColor="?attr/colorOnSurfaceVariant"
             android:lineSpacingExtra="4dp" />
 
-        <!-- Linha 3: Regra compacta numa única faixa -->
-        <!-- "Se ligar [N▾] vez(es), bloquear por [dur▾] [unidade▾]" -->
+        <!-- Linha 3: Configurações "Se ligar X vezes, bloqueie por Y [unidade]" -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
+            android:orientation="vertical"
             android:background="?attr/colorSurfaceVariant"
-            android:paddingVertical="8dp"
+            android:padding="12dp"
             app:cornerRadius="12dp">
 
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/if_calls"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurface" />
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <!-- Spinner de quantidade: wrap_content, não ocupa linha toda -->
-            <Spinner
-                android:id="@+id/spinnerMaxCalls"
-                android:layout_width="wrap_content"
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/if_calls"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurface" />
+
+                <Spinner
+                    android:id="@+id/spinnerMaxCalls"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:spinnerMode="dropdown" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/times"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:paddingHorizontal="4dp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="4dp"
-                android:minWidth="48dp"
-                android:spinnerMode="dropdown" />
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/block_for"
-                android:textAppearance="?attr/textAppearanceBodyMedium"
-                android:textColor="?attr/colorOnSurface"
-                android:layout_marginEnd="4dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/block_for"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurface" />
 
-            <!-- Duração: cresce para preencher espaço restante -->
-            <Spinner
-                android:id="@+id/spinnerDuration"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginEnd="4dp"
-                android:spinnerMode="dropdown" />
+                <Spinner
+                    android:id="@+id/spinnerDuration"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:spinnerMode="dropdown" />
 
-            <!-- Unidade: wrap_content -->
-            <Spinner
-                android:id="@+id/spinnerUnit"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:spinnerMode="dropdown" />
-
+                <Spinner
+                    android:id="@+id/spinnerUnit"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:spinnerMode="dropdown" />
+            </LinearLayout>
         </LinearLayout>
 
-        <!-- Linha 4: Toggle de janela de horário -->
+        <!-- Linha 4: Janela de horário (opcional) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -131,7 +146,6 @@
                 android:paddingStart="8dp" />
         </LinearLayout>
 
-        <!-- Linha 5: Seletores de horário (visíveis só com toggle ativo) -->
         <LinearLayout
             android:id="@+id/layoutTimeWindow"
             android:layout_width="match_parent"

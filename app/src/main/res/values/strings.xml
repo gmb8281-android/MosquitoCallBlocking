@@ -5,7 +5,8 @@
     <string name="add_contact">Adicionar contato</string>
     <string name="remove_contact">Remover contato</string>
     <string name="if_calls">Se ligar</string>
-    <string name="block_for">vezes , bloqueie por</string>
+    <string name="times">vezes , </string>
+    <string name="block_for">bloqueie por</string>
     <string name="time_window_label">Horário permitido</string>
     <string name="to_time">às</string>
 
