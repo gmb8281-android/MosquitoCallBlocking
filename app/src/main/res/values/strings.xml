@@ -1,0 +1,35 @@
+<resources>
+    <string name="app_name">ZikaVírus CallBlocking</string>
+
+    <!-- Botões e descrições da UI -->
+    <string name="add_contact">Adicionar contato</string>
+    <string name="remove_contact">Remover contato</string>
+    <string name="if_calls">Se ligar</string>
+    <string name="block_for">vezes , bloqueie por</string>
+    <string name="time_window_label">Horário permitido</string>
+    <string name="to_time">às</string>
+
+    <!-- Ações e unidades dos spinners -->
+    <string name="action_block">Bloquear</string>
+    <string name="unit_minutes">Minutos</string>
+    <string name="unit_hours">Horas</string>
+
+    <!-- Snackbar e remoção -->
+    <string name="contact_removed">%s removido</string>
+    <string name="undo">Desfazer</string>
+    <string name="contact_no_phone">Contato sem número de telefone cadastrado.</string>
+
+    <!-- Permissões e configurações -->
+    <string name="perm_title">Permissões necessárias</string>
+    <string name="perm_message">Para bloquear chamadas, o app precisa acessar seus contatos, registros de chamadas e telefone.</string>
+    <string name="battery_title">Otimização de bateria</string>
+    <string name="battery_message">Para garantir o funcionamento contínuo, permita que o app rode sem restrições de bateria.</string>
+    <string name="screening_title">Triagem de chamadas</string>
+    <string name="screening_message">Defina este app como serviço de triagem para permitir o bloqueio automático de chamadas.</string>
+    <string name="admin_title">Administrador do dispositivo</string>
+    <string name="admin_message">Ative o administrador para impedir a desinstalação não autorizada do app.</string>
+
+    <!-- Botões genéricos -->
+    <string name="ok">OK</string>
+    <string name="cancel">Cancelar</string>
+</resources>

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Cores primárias -->
+    <color name="purple_500">#FF6750A4</color>
+    <color name="purple_700">#FF4F378B</color>
+    <color name="purple_200">#FFD0BCFF</color>
+
+    <!-- Cores secundárias -->
+    <color name="teal_200">#FF66D9D9</color>
+    <color name="teal_700">#FF00897B</color>
+
+    <!-- Cores neutras -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+
+    <!-- Fundo e superfície (claro) -->
+    <color name="background_light">#FFFEF7FF</color>
+    <color name="surface_light">#FFFEF7FF</color>
+
+    <!-- Fundo e superfície (escuro) -->
+    <color name="background_dark">#FF1C1B1F</color>
+    <color name="surface_dark">#FF1C1B1F</color>
+</resources>

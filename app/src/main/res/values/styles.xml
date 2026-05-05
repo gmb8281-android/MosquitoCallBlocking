@@ -1,0 +1,12 @@
+<resources>
+    <!-- Título expandido: grande, bold, cor onPrimary -->
+    <style name="ExpandedTitle" parent="TextAppearance.Material3.HeadlineMedium">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- Título colapsado: normal, onPrimary -->
+    <style name="CollapsedTitle" parent="TextAppearance.Material3.TitleMedium">
+        <item name="android:textColor">?attr/colorOnPrimary</item>
+    </style>
+</resources>
