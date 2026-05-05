@@ -63,15 +63,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Receptor de estado de chamada (backup de log) -->
-        <receiver
-            android:name=".PhoneStateReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.PHONE_STATE" />
-            </intent-filter>
-        </receiver>
-
         <!-- Administrador de dispositivo (para impedir desinstalação) -->
         <receiver
             android:name=".DeviceAdminReceiverImpl"

@@ -11,20 +11,15 @@ import android.telecom.CallScreeningService;
 import android.telecom.TelecomManager;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 
 import java.util.Calendar;
 
-@RequiresApi(api = Build.VERSION_CODES.N)
 public class CallScreeningServiceImpl extends CallScreeningService {
 
     private static final long TWO_DAYS_MS = 2L * 24 * 60 * 60 * 1000;
 
     @Override
     public void onScreenCall(@NonNull Call.Details callDetails) {
-        // Chamadas efetuadas pelo usuário nunca devem ser bloqueadas.
-        // No API 29+ o serviço de triagem também é invocado para outgoing calls;
-        // abaixo do 29 o sistema só chama onScreenCall para incoming, sem risco.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
                 callDetails.getCallDirection() == Call.Details.DIRECTION_OUTGOING) {
             respondToCall(callDetails, new CallResponse.Builder().build());
@@ -44,20 +39,10 @@ public class CallScreeningServiceImpl extends CallScreeningService {
         if (block) {
             final Context appCtx = getApplicationContext();
             final String numToDelete = phoneNumber;
-
-            // Thread 1 — derruba a ligação.
-            // Pequeno delay para o telecom processar o respondToCall antes do endCall.
             new Thread(() -> {
-                try { Thread.sleep(300); } catch (InterruptedException ignored) {}
+                try { Thread.sleep(100); } catch (InterruptedException ignored) {}
                 endCallNow(appCtx);
             }).start();
-
-            // Thread 2 — apaga do histórico do discador (somente a entrada bloqueada).
-            // Roda em paralelo com a Thread 1; usa loop de tentativas porque o
-            // sistema grava a entrada no call log em tempo variável após encerrar
-            // a chamada (especialmente na primeira ocorrência, pode demorar mais).
-            // Tentativas: aguarda 800ms, depois tenta até 6x em intervalos de 600ms
-            // (janela total ~4.4s), parando assim que a entrada for encontrada e deletada.
             new Thread(() -> {
                 try { Thread.sleep(800); } catch (InterruptedException ignored) {}
                 for (int attempt = 0; attempt < 6; attempt++) {
@@ -271,7 +256,7 @@ public class CallScreeningServiceImpl extends CallScreeningService {
 
     private void endCallNow(Context ctx) {
         TelecomManager tm = (TelecomManager) ctx.getSystemService(Context.TELECOM_SERVICE);
-        if (tm != null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+        if (tm != null) {
             try { tm.endCall(); } catch (SecurityException e) { e.printStackTrace(); }
         }
     }

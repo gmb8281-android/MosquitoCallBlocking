@@ -18,10 +18,8 @@ public class BootReceiver extends BroadcastReceiver {
         String action = intent.getAction();
         if (Intent.ACTION_BOOT_COMPLETED.equals(action) ||
                 "android.intent.action.LOCKED_BOOT_COMPLETED".equals(action)) {
-
-            // Inicializa o banco de dados (cria tabelas se necessário)
             DatabaseHelper db = new DatabaseHelper(context);
-            db.cleanOldLogs(); // aproveita para limpar logs antigos no boot
+            db.cleanOldLogs();
             db.close();
         }
     }

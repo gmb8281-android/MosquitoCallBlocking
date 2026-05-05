@@ -1,6 +1,7 @@
 package com.marinov.zicavirus;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
@@ -83,8 +84,6 @@ public class MainActivity extends AppCompatActivity {
         registerLaunchers();
 
         fabAdd.setOnClickListener(v -> openContactPicker());
-
-        // Inicia fluxo de permissões na primeira abertura
         startPermissionFlow();
     }
 
@@ -104,6 +103,11 @@ public class MainActivity extends AppCompatActivity {
     private void onRemoveContact(int position, ContactRule rule) {
         adapter.removeAt(position);
         RulesManager.removeRule(this, rule.contactId);
+
+        // Remove também os logs internos do contato (banco SQLite)
+        DatabaseHelper db = new DatabaseHelper(this);
+        db.deleteCallsForContact(rule.contactId);
+        db.close();
 
         // Snackbar com desfazer
         String msg = getString(R.string.contact_removed, rule.contactName);
@@ -241,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
                     .setTitle(R.string.battery_title)
                     .setMessage(R.string.battery_message)
                     .setPositiveButton(R.string.ok, (d, w) -> {
-                        Intent intent = new Intent(
+                        @SuppressLint("BatteryLife") Intent intent = new Intent(
                                 Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
                                 Uri.parse("package:" + getPackageName()));
                         batteryLauncher.launch(intent);
@@ -278,8 +282,6 @@ public class MainActivity extends AppCompatActivity {
             TelecomManager tm = (TelecomManager) getSystemService(TELECOM_SERVICE);
             if (tm != null) {
                 new ComponentName(this, CallScreeningServiceImpl.class);
-                // Em versões < Q, o sistema vincula automaticamente o CallScreeningService
-                // registrado no manifesto; não é necessária ação do usuário.
             }
         }
         checkAndRequestDeviceAdmin();
