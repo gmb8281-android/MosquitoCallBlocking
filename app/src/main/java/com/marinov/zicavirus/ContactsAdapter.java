@@ -86,24 +86,28 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
         TextView       tvContactName, tvPhoneNumbers;
         ImageButton    btnRemove;
         Spinner        spinnerMaxCalls, spinnerDuration, spinnerUnit;
+        Spinner        spinnerResetDuration, spinnerResetUnit;
         SwitchMaterial switchTimeWindow;
         LinearLayout   layoutTimeWindow;
         TextView       tvTimeStart, tvTimeEnd;
 
         boolean binding = false;
+        private boolean ignoreSpinnerEvents = false;
 
         ViewHolder(@NonNull View itemView) {
             super(itemView);
-            tvContactName    = itemView.findViewById(R.id.tvContactName);
-            tvPhoneNumbers   = itemView.findViewById(R.id.tvPhoneNumbers);
-            btnRemove        = itemView.findViewById(R.id.btnRemove);
-            spinnerMaxCalls  = itemView.findViewById(R.id.spinnerMaxCalls);
-            spinnerDuration  = itemView.findViewById(R.id.spinnerDuration);
-            spinnerUnit      = itemView.findViewById(R.id.spinnerUnit);
-            switchTimeWindow = itemView.findViewById(R.id.switchTimeWindow);
-            layoutTimeWindow = itemView.findViewById(R.id.layoutTimeWindow);
-            tvTimeStart      = itemView.findViewById(R.id.tvTimeStart);
-            tvTimeEnd        = itemView.findViewById(R.id.tvTimeEnd);
+            tvContactName        = itemView.findViewById(R.id.tvContactName);
+            tvPhoneNumbers       = itemView.findViewById(R.id.tvPhoneNumbers);
+            btnRemove            = itemView.findViewById(R.id.btnRemove);
+            spinnerMaxCalls      = itemView.findViewById(R.id.spinnerMaxCalls);
+            spinnerDuration      = itemView.findViewById(R.id.spinnerDuration);
+            spinnerUnit          = itemView.findViewById(R.id.spinnerUnit);
+            spinnerResetDuration = itemView.findViewById(R.id.spinnerResetDuration);
+            spinnerResetUnit     = itemView.findViewById(R.id.spinnerResetUnit);
+            switchTimeWindow     = itemView.findViewById(R.id.switchTimeWindow);
+            layoutTimeWindow     = itemView.findViewById(R.id.layoutTimeWindow);
+            tvTimeStart          = itemView.findViewById(R.id.tvTimeStart);
+            tvTimeEnd            = itemView.findViewById(R.id.tvTimeEnd);
         }
 
         void bind(ContactRule rule) {
@@ -122,18 +126,25 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
             spinnerMaxCalls.setAdapter(simpleAdapter(qtd));
             spinnerMaxCalls.setSelection(Math.max(0, rule.maxCalls - 1));
 
-            // Unidade de tempo
+            // Unidades de tempo (compartilhadas)
             String[] units = {
                     context.getString(R.string.unit_minutes),
                     context.getString(R.string.unit_hours)
             };
+
+            // Setup spinners de penalidade
             spinnerUnit.setAdapter(simpleAdapter(units));
+            boolean penaltyIsHours = rule.penaltyMinutes > 0 && rule.penaltyMinutes % 60 == 0 && rule.penaltyMinutes / 60 <= 24;
+            int penaltyUnitIdx = penaltyIsHours ? 1 : 0;
+            spinnerUnit.setSelection(penaltyUnitIdx);
+            updateDurationSpinner(spinnerDuration, rule.penaltyMinutes, penaltyUnitIdx);
 
-            boolean isHours = rule.penaltyMinutes > 0 && rule.penaltyMinutes % 60 == 0 && rule.penaltyMinutes / 60 <= 24;
-            int unitIdx = isHours ? 1 : 0;
-            spinnerUnit.setSelection(unitIdx);
-
-            updateDurationSpinner(rule, unitIdx);
+            // Setup spinners de reset
+            spinnerResetUnit.setAdapter(simpleAdapter(units));
+            boolean resetIsHours = rule.resetWindowMinutes > 0 && rule.resetWindowMinutes % 60 == 0 && rule.resetWindowMinutes / 60 <= 24;
+            int resetUnitIdx = resetIsHours ? 1 : 0;
+            spinnerResetUnit.setSelection(resetUnitIdx);
+            updateDurationSpinner(spinnerResetDuration, rule.resetWindowMinutes, resetUnitIdx);
 
             switchTimeWindow.setChecked(rule.timeWindowEnabled);
             layoutTimeWindow.setVisibility(rule.timeWindowEnabled ? View.VISIBLE : View.GONE);
@@ -146,7 +157,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
             spinnerMaxCalls.setOnItemSelectedListener(new SimpleItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                    if (binding) return;
+                    if (binding || ignoreSpinnerEvents) return;
                     int idx = getAdapterPosition();
                     if (idx < 0) return;
                     ContactRule r = rules.get(idx);
@@ -158,23 +169,69 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
             spinnerUnit.setOnItemSelectedListener(new SimpleItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                    if (binding) return;
+                    if (binding || ignoreSpinnerEvents) return;
                     int idx = getAdapterPosition();
                     if (idx < 0) return;
                     ContactRule r = rules.get(idx);
-                    updateDurationSpinner(r, pos);
+
+                    ignoreSpinnerEvents = true;
+                    // Ao trocar a unidade, redefine o valor para 1 (minuto) ou 1 hora
+                    if (pos == 1) {
+                        r.penaltyMinutes = 60;   // 1 hora
+                    } else {
+                        r.penaltyMinutes = 1;     // 1 minuto
+                    }
+                    updateDurationSpinner(spinnerDuration, r.penaltyMinutes, pos);
+                    ignoreSpinnerEvents = false;
+
+                    RulesManager.updateRule(context, r);
                 }
             });
 
             spinnerDuration.setOnItemSelectedListener(new SimpleItemSelectedListener() {
                 @Override
                 public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
-                    if (binding) return;
+                    if (binding || ignoreSpinnerEvents) return;
                     int idx = getAdapterPosition();
                     if (idx < 0) return;
                     ContactRule r = rules.get(idx);
                     boolean hrs = spinnerUnit.getSelectedItemPosition() == 1;
                     r.penaltyMinutes = hrs ? (pos + 1) * 60 : (pos + 1);
+                    RulesManager.updateRule(context, r);
+                }
+            });
+
+            // Listeners para reset
+            spinnerResetUnit.setOnItemSelectedListener(new SimpleItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                    if (binding || ignoreSpinnerEvents) return;
+                    int idx = getAdapterPosition();
+                    if (idx < 0) return;
+                    ContactRule r = rules.get(idx);
+
+                    ignoreSpinnerEvents = true;
+                    if (pos == 1) {
+                        r.resetWindowMinutes = 60;
+                    } else {
+                        r.resetWindowMinutes = 1;
+                    }
+                    updateDurationSpinner(spinnerResetDuration, r.resetWindowMinutes, pos);
+                    ignoreSpinnerEvents = false;
+
+                    RulesManager.updateRule(context, r);
+                }
+            });
+
+            spinnerResetDuration.setOnItemSelectedListener(new SimpleItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int pos, long id) {
+                    if (binding || ignoreSpinnerEvents) return;
+                    int idx = getAdapterPosition();
+                    if (idx < 0) return;
+                    ContactRule r = rules.get(idx);
+                    boolean hrs = spinnerResetUnit.getSelectedItemPosition() == 1;
+                    r.resetWindowMinutes = hrs ? (pos + 1) * 60 : (pos + 1);
                     RulesManager.updateRule(context, r);
                 }
             });
@@ -220,21 +277,24 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
             });
         }
 
-        private void updateDurationSpinner(ContactRule rule, int unitIndex) {
+        /**
+         * Atualiza o Spinner de duração com base no valor em minutos e na unidade selecionada.
+         */
+        private void updateDurationSpinner(Spinner durationSpinner, int totalMinutes, int unitIndex) {
             boolean isHours = unitIndex == 1;
             int max = isHours ? 24 : 59;
             String[] values = new String[max];
             for (int i = 0; i < max; i++) values[i] = String.valueOf(i + 1);
-            spinnerDuration.setAdapter(simpleAdapter(values));
+            durationSpinner.setAdapter(simpleAdapter(values));
 
             int currentValue;
             if (isHours) {
-                currentValue = (rule.penaltyMinutes / 60) - 1;
+                currentValue = (totalMinutes / 60) - 1;
             } else {
-                currentValue = rule.penaltyMinutes - 1;
+                currentValue = totalMinutes - 1;
             }
             int selection = Math.max(0, Math.min(currentValue, max - 1));
-            spinnerDuration.setSelection(selection);
+            durationSpinner.setSelection(selection);
         }
 
         private ArrayAdapter<String> simpleAdapter(String[] items) {

@@ -54,7 +54,7 @@
             android:textColor="?attr/colorOnSurfaceVariant"
             android:lineSpacingExtra="4dp" />
 
-        <!-- Linha 3: Configurações "Se ligar X vezes, bloqueie por Y [unidade]" -->
+        <!-- Linha 3: Configurações -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -64,6 +64,7 @@
             android:padding="12dp"
             app:cornerRadius="12dp">
 
+            <!-- Condição: Se ligar X vezes em Y período -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -87,12 +88,36 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/times"
+                    android:text="@string/times_within"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
                     android:textColor="?attr/colorOnSurface"
                     android:paddingHorizontal="4dp" />
             </LinearLayout>
 
+            <!-- Período de reset: duração + unidade -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <Spinner
+                    android:id="@+id/spinnerResetDuration"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:spinnerMode="dropdown" />
+
+                <Spinner
+                    android:id="@+id/spinnerResetUnit"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:spinnerMode="dropdown" />
+            </LinearLayout>
+
+            <!-- Consequência: bloqueie por Z período -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

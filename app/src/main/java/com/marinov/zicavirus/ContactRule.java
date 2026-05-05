@@ -37,6 +37,9 @@ public class ContactRule {
     /** Horário de fim da janela permitida, formato "HH:mm" */
     public String timeWindowEnd = "22:00";
 
+    /** Período de reset da contagem em minutos (padrão: 2880 = 48h) */
+    public int resetWindowMinutes = 2880;
+
     // -------------------------------------------------------------------------
     // Serialização JSON
     // -------------------------------------------------------------------------
@@ -57,6 +60,7 @@ public class ContactRule {
         obj.put("timeWindowEnabled", timeWindowEnabled);
         obj.put("timeWindowStart", timeWindowStart);
         obj.put("timeWindowEnd", timeWindowEnd);
+        obj.put("resetWindowMinutes", resetWindowMinutes);
         return obj;
     }
 
@@ -77,6 +81,7 @@ public class ContactRule {
         rule.timeWindowEnabled = obj.optBoolean("timeWindowEnabled", false);
         rule.timeWindowStart = obj.optString("timeWindowStart", "08:00");
         rule.timeWindowEnd = obj.optString("timeWindowEnd", "22:00");
+        rule.resetWindowMinutes = obj.optInt("resetWindowMinutes", 2880);
         return rule;
     }
 }

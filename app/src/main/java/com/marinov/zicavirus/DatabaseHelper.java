@@ -17,7 +17,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String COL_NUM    = "phone_number";
     private static final String COL_TIME   = "timestamp";
 
-    private static final long TWO_DAYS_MS  = 2L * 24 * 60 * 60 * 1000;
+    // Limpeza geral: remove entradas com mais de 7 dias (não afeta a janela de reset por regra)
+    private static final long MAX_LOG_AGE_MS = 7L * 24 * 60 * 60 * 1000;
 
     public DatabaseHelper(Context ctx) {
         super(ctx.getApplicationContext(), DB_NAME, null, DB_VERSION);
@@ -61,7 +62,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void cleanOldLogs() {
-        long cutoff = System.currentTimeMillis() - TWO_DAYS_MS;
+        long cutoff = System.currentTimeMillis() - MAX_LOG_AGE_MS;
         getWritableDatabase().delete(TABLE, COL_TIME + " < ?",
                 new String[]{ String.valueOf(cutoff) });
     }
