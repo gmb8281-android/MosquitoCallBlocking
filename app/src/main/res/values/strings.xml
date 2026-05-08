@@ -30,6 +30,15 @@
     <string name="admin_title">Administrador do dispositivo</string>
     <string name="admin_message">Ative o administrador para impedir a desinstalação não autorizada do app.</string>
 
+    <!-- Modo da regra -->
+    <string name="mode_label">Modo:</string>
+    <string name="mode_received">Recebidas</string>
+    <string name="mode_outgoing">Efetuadas</string>
+
+    <!-- Diálogo de bloqueio de efetuadas -->
+    <string name="blocked_outgoing_message">Você ligou muitas vezes. Tente novamente em %s.</string>
+    <string name="understand">Entendi</string>
+
     <!-- Botões genéricos -->
     <string name="ok">OK</string>
     <string name="cancel">Cancelar</string>

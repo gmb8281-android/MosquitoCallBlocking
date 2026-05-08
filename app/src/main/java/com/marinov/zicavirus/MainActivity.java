@@ -4,6 +4,7 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
+import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     private ActivityResultLauncher<Intent>   batteryLauncher;
     private ActivityResultLauncher<Intent>   adminLauncher;
     private ActivityResultLauncher<Intent>   screeningLauncher;
+    private ActivityResultLauncher<Intent>   overlayLauncher;
 
     // -------------------------------------------------------------------------
     // Ciclo de vida
@@ -106,7 +108,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Remove também os logs internos do contato (banco SQLite)
         DatabaseHelper db = new DatabaseHelper(this);
-        db.deleteCallsForContact(rule.contactId);
+        db.deleteCallsForContact(rule.contactId, "incoming");
+        db.deleteCallsForContact(rule.contactId, "outgoing");
         db.close();
 
         // Snackbar com desfazer
@@ -212,7 +215,11 @@ public class MainActivity extends AppCompatActivity {
 
         adminLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
-                r -> { /* setup completo */ });
+                r -> checkAndRequestOverlayPermission());   // <-- próximo passo: overlay
+
+        overlayLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                r -> { /* fim do fluxo */ });
     }
 
     private void startPermissionFlow() {
@@ -278,11 +285,6 @@ public class MainActivity extends AppCompatActivity {
                         .show();
                 return;
             }
-        } else {
-            TelecomManager tm = (TelecomManager) getSystemService(TELECOM_SERVICE);
-            if (tm != null) {
-                new ComponentName(this, CallScreeningServiceImpl.class);
-            }
         }
         checkAndRequestDeviceAdmin();
     }
@@ -303,9 +305,31 @@ public class MainActivity extends AppCompatActivity {
                         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, admin);
                         adminLauncher.launch(intent);
                     })
-                    .setNegativeButton(R.string.cancel, null)
+                    .setNegativeButton(R.string.cancel, (d, w) ->
+                            checkAndRequestOverlayPermission())
                     .setCancelable(false)
                     .show();
+        } else {
+            checkAndRequestOverlayPermission();
+        }
+    }
+
+    private void checkAndRequestOverlayPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                new AlertDialog.Builder(this)
+                        .setTitle("Permissão de sobreposição")
+                        .setMessage("Para mostrar o aviso de bloqueio quando uma chamada for efetuada, permita que o app exiba sobre outros aplicativos.")
+                        .setPositiveButton(R.string.ok, (d, w) -> {
+                            Intent intent = new Intent(
+                                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                                    Uri.parse("package:" + getPackageName()));
+                            overlayLauncher.launch(intent);
+                        })
+                        .setCancelable(false)
+                        .show();
+            }
+            // Se já tiver permissão, não faz nada
         }
     }
 }

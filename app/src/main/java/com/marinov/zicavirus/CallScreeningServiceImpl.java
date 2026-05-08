@@ -1,9 +1,12 @@
 package com.marinov.zicavirus;
 
 import android.content.Context;
+import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.provider.CallLog;
 import android.provider.ContactsContract;
 import android.telecom.Call;
@@ -18,17 +21,12 @@ public class CallScreeningServiceImpl extends CallScreeningService {
 
     @Override
     public void onScreenCall(@NonNull Call.Details callDetails) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-                callDetails.getCallDirection() == Call.Details.DIRECTION_OUTGOING) {
-            respondToCall(callDetails, new CallResponse.Builder().build());
-            return;
-        }
-
+        int direction = callDetails.getCallDirection();
         String phoneNumber = extractNumber(callDetails);
         boolean block = false;
 
         if (phoneNumber != null) {
-            block = processCall(getApplicationContext(), phoneNumber);
+            block = processCall(getApplicationContext(), phoneNumber, direction);
         }
 
         CallResponse response = new CallResponse.Builder().build();
@@ -37,10 +35,26 @@ public class CallScreeningServiceImpl extends CallScreeningService {
         if (block) {
             final Context appCtx = getApplicationContext();
             final String numToDelete = phoneNumber;
+            final int callDir = direction;
+
+            // Derruba a chamada e, se for efetuada, mostra o pop-up
             new Thread(() -> {
                 try { Thread.sleep(100); } catch (InterruptedException ignored) {}
                 endCallNow(appCtx);
+                if (callDir == Call.Details.DIRECTION_OUTGOING) {
+                    String contactId = getContactId(appCtx, numToDelete);
+                    ContactRule rule = (contactId != null)
+                            ? RulesManager.findRuleForContact(appCtx, contactId)
+                            : RulesManager.findRuleForNumber(appCtx, numToDelete);
+                    if (rule != null) {
+                        Intent serviceIntent = new Intent(appCtx, BlockedOutgoingDialogService.class);
+                        serviceIntent.putExtra("penalty_minutes", rule.penaltyMinutes);
+                        appCtx.startService(serviceIntent);
+                    }
+                }
             }).start();
+
+            // Remove o registro do histórico do discador
             new Thread(() -> {
                 try { Thread.sleep(800); } catch (InterruptedException ignored) {}
                 for (int attempt = 0; attempt < 6; attempt++) {
@@ -55,8 +69,9 @@ public class CallScreeningServiceImpl extends CallScreeningService {
     // Lógica principal (mesma documentação, agora com janela de reset dinâmica)
     // ─────────────────────────────────────────────────────────────────────────
 
-    private boolean processCall(Context ctx, String phoneNumber) {
+    private boolean processCall(Context ctx, String phoneNumber, int direction) {
         long now = System.currentTimeMillis();
+        String dirStr = (direction == Call.Details.DIRECTION_OUTGOING) ? "outgoing" : "incoming";
 
         String contactId = getContactId(ctx, phoneNumber);
         ContactRule rule = (contactId != null)
@@ -65,7 +80,12 @@ public class CallScreeningServiceImpl extends CallScreeningService {
 
         // 1. Sem regra: loga e libera
         if (rule == null) {
-            logCall(ctx, contactId, phoneNumber, now);
+            logCall(ctx, contactId, phoneNumber, now, dirStr);
+            return false;
+        }
+
+        // Se o modo da regra não coincide com a direção da chamada, ignora a regra
+        if (!dirStr.equals(rule.mode)) {
             return false;
         }
 
@@ -79,7 +99,7 @@ public class CallScreeningServiceImpl extends CallScreeningService {
             rule.blockedUntil = 0;
             RulesManager.updateRule(ctx, rule);
             DatabaseHelper dbReset = new DatabaseHelper(ctx);
-            dbReset.deleteCallsForContact(rule.contactId);
+            dbReset.deleteCallsForContact(rule.contactId, dirStr);
             dbReset.close();
         }
 
@@ -90,13 +110,13 @@ public class CallScreeningServiceImpl extends CallScreeningService {
 
         // 5. Loga esta chamada
         String cid = (contactId != null) ? contactId : rule.contactId;
-        logCall(ctx, cid, phoneNumber, now);
+        logCall(ctx, cid, phoneNumber, now, dirStr);
 
         // Janela de reset dinâmica (em minutos)
         long resetWindowMs = (long) rule.resetWindowMinutes * 60 * 1000;
 
         DatabaseHelper db = new DatabaseHelper(ctx);
-        int callCount = db.countCallsForContact(rule.contactId, now - resetWindowMs);
+        int callCount = db.countCallsForContact(rule.contactId, now - resetWindowMs, dirStr);
         db.close();
 
         // 6. count > maxCalls → aplica penalidade
@@ -113,9 +133,9 @@ public class CallScreeningServiceImpl extends CallScreeningService {
     // Helpers internos (idênticos ao original)
     // ─────────────────────────────────────────────────────────────────────────
 
-    private void logCall(Context ctx, String contactId, String phoneNumber, long timestamp) {
+    private void logCall(Context ctx, String contactId, String phoneNumber, long timestamp, String direction) {
         DatabaseHelper db = new DatabaseHelper(ctx);
-        db.insertCallLog(contactId, phoneNumber, timestamp);
+        db.insertCallLog(contactId, phoneNumber, timestamp, direction);
         db.cleanOldLogs();
         db.close();
     }

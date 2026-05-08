@@ -83,11 +83,11 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
 
     class ViewHolder extends RecyclerView.ViewHolder {
 
-        TextView       tvContactName, tvPhoneNumbers;
+        TextView       tvContactName, tvPhoneNumbers, tvModeLabel;
         ImageButton    btnRemove;
         Spinner        spinnerMaxCalls, spinnerDuration, spinnerUnit;
         Spinner        spinnerResetDuration, spinnerResetUnit;
-        SwitchMaterial switchTimeWindow;
+        SwitchMaterial switchTimeWindow, switchMode;
         LinearLayout   layoutTimeWindow;
         TextView       tvTimeStart, tvTimeEnd;
 
@@ -108,6 +108,8 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
             layoutTimeWindow     = itemView.findViewById(R.id.layoutTimeWindow);
             tvTimeStart          = itemView.findViewById(R.id.tvTimeStart);
             tvTimeEnd            = itemView.findViewById(R.id.tvTimeEnd);
+            switchMode           = itemView.findViewById(R.id.switchMode);
+            tvModeLabel          = itemView.findViewById(R.id.tvModeLabel);
         }
 
         void bind(ContactRule rule) {
@@ -151,6 +153,13 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
             tvTimeStart.setText(rule.timeWindowStart);
             tvTimeEnd.setText(rule.timeWindowEnd);
 
+            // Modo (Recebidas / Efetuadas)
+            boolean isOutgoing = "outgoing".equals(rule.mode);
+            switchMode.setChecked(isOutgoing);
+            tvModeLabel.setText(isOutgoing
+                    ? context.getString(R.string.mode_outgoing)
+                    : context.getString(R.string.mode_received));
+
             binding = false;
 
             // Listeners
@@ -175,7 +184,6 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
                     ContactRule r = rules.get(idx);
 
                     ignoreSpinnerEvents = true;
-                    // Ao trocar a unidade, redefine o valor para 1 (minuto) ou 1 hora
                     if (pos == 1) {
                         r.penaltyMinutes = 60;   // 1 hora
                     } else {
@@ -274,6 +282,19 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
                 int idx = getAdapterPosition();
                 if (idx < 0) return;
                 if (removeListener != null) removeListener.onRemove(idx, rules.get(idx));
+            });
+
+            // Listener do switch de modo
+            switchMode.setOnCheckedChangeListener((btn, checked) -> {
+                if (binding) return;
+                int idx = getAdapterPosition();
+                if (idx < 0) return;
+                ContactRule r = rules.get(idx);
+                r.mode = checked ? "outgoing" : "incoming";
+                tvModeLabel.setText(checked
+                        ? context.getString(R.string.mode_outgoing)
+                        : context.getString(R.string.mode_received));
+                RulesManager.updateRule(context, r);
             });
         }
 
