@@ -21,6 +21,7 @@ public class BlockedOutgoingDialogService extends Service {
 
     private WindowManager windowManager;
     private View overlayView;
+    private boolean isViewAttached = false;
 
     @Nullable
     @Override
@@ -83,11 +84,17 @@ public class BlockedOutgoingDialogService extends Service {
         params.y = 0;
 
         windowManager.addView(overlayView, params);
+        isViewAttached = true;
     }
 
     private void removeOverlay() {
-        if (windowManager != null && overlayView != null) {
-            windowManager.removeView(overlayView);
+        if (windowManager != null && overlayView != null && isViewAttached) {
+            try {
+                windowManager.removeView(overlayView);
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            }
+            isViewAttached = false;
         }
     }
 
