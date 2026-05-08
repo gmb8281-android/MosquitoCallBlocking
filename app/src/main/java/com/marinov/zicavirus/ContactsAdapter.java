@@ -284,7 +284,7 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
                 if (removeListener != null) removeListener.onRemove(idx, rules.get(idx));
             });
 
-            // Listener do switch de modo
+            // Listener do switch de modo – agora limpa o banco do contato
             switchMode.setOnCheckedChangeListener((btn, checked) -> {
                 if (binding) return;
                 int idx = getAdapterPosition();
@@ -295,6 +295,12 @@ public class ContactsAdapter extends RecyclerView.Adapter<ContactsAdapter.ViewHo
                         ? context.getString(R.string.mode_outgoing)
                         : context.getString(R.string.mode_received));
                 RulesManager.updateRule(context, r);
+
+                // Limpar histórico interno do contato ao trocar de modo
+                DatabaseHelper db = new DatabaseHelper(context);
+                db.deleteCallsForContact(r.contactId, "incoming");
+                db.deleteCallsForContact(r.contactId, "outgoing");
+                db.close();
             });
         }
 
