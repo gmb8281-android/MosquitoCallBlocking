@@ -19,6 +19,8 @@ import java.util.Calendar;
 
 public class CallScreeningServiceImpl extends CallScreeningService {
 
+    private final Handler handler = new Handler(Looper.getMainLooper());
+
     @Override
     public void onScreenCall(@NonNull Call.Details callDetails) {
         int direction = callDetails.getCallDirection();
@@ -37,11 +39,16 @@ public class CallScreeningServiceImpl extends CallScreeningService {
             final String numToDelete = phoneNumber;
             final int callDir = direction;
 
-            // Derruba a chamada e, se for efetuada, mostra o pop-up
-            new Thread(() -> {
-                try { Thread.sleep(100); } catch (InterruptedException ignored) {}
-                endCallNow(appCtx);
-                if (callDir == Call.Details.DIRECTION_OUTGOING) {
+            // Para chamadas efetuadas, usamos múltiplas tentativas de desligamento
+            if (callDir == Call.Details.DIRECTION_OUTGOING) {
+                // Agenda tentativas de endCall com backoff
+                for (int i = 0; i < 5; i++) {
+                    final long delay = 100 + (i * 300); // 100, 400, 700, 1000, 1300 ms
+                    handler.postDelayed(() -> endCallNow(appCtx), delay);
+                }
+
+                // Mostra o diálogo de bloqueio (apenas uma vez)
+                handler.postDelayed(() -> {
                     String contactId = getContactId(appCtx, numToDelete);
                     ContactRule rule = (contactId != null)
                             ? RulesManager.findRuleForContact(appCtx, contactId)
@@ -51,10 +58,16 @@ public class CallScreeningServiceImpl extends CallScreeningService {
                         serviceIntent.putExtra("penalty_minutes", rule.penaltyMinutes);
                         appCtx.startService(serviceIntent);
                     }
-                }
-            }).start();
+                }, 150);
+            } else {
+                // Chamadas recebidas: apenas desliga rápido, como antes
+                new Thread(() -> {
+                    try { Thread.sleep(100); } catch (InterruptedException ignored) {}
+                    endCallNow(appCtx);
+                }).start();
+            }
 
-            // Remove o registro do histórico do discador
+            // Remove o registro do histórico do discador (em background)
             new Thread(() -> {
                 try { Thread.sleep(800); } catch (InterruptedException ignored) {}
                 for (int attempt = 0; attempt < 6; attempt++) {
@@ -239,7 +252,11 @@ public class CallScreeningServiceImpl extends CallScreeningService {
     private void endCallNow(Context ctx) {
         TelecomManager tm = (TelecomManager) ctx.getSystemService(Context.TELECOM_SERVICE);
         if (tm != null) {
-            try { tm.endCall(); } catch (SecurityException e) { e.printStackTrace(); }
+            try {
+                tm.endCall();
+            } catch (SecurityException e) {
+                e.printStackTrace();
+            }
         }
     }
 }
