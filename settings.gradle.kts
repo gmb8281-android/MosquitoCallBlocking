@@ -22,5 +22,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Zika Vírus"
+rootProject.name = "MosquitoCallBlocking"
 include(":app")
