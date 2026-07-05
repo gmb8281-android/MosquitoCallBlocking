@@ -1,4 +1,4 @@
-package com.marinov.zicavirus;
+package com.marinov.mosquito;
 
 import org.json.JSONArray;
 import org.json.JSONException;

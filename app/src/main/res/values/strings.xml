@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ZikaVírus CallBlocking</string>
+    <string name="app_name">Mosquito CallBlocking</string>
 
     <!-- Botões e descrições da UI -->
     <string name="add_contact">Adicionar contato</string>

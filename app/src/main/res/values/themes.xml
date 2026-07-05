@@ -1,6 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Tema base Material 3 sem ActionBar -->
-    <style name="Theme.ZikaVírus" parent="Theme.Material3.DayNight.NoActionBar">
+    <style name="Theme.Mosquito" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Cores primárias -->
         <item name="colorPrimary">@color/purple_500</item>
         <item name="colorPrimaryVariant">@color/purple_700</item>

@@ -1,4 +1,4 @@
-package com.marinov.zicavirus;
+package com.marinov.mosquito;
 
 import android.app.Service;
 import android.content.Context;
@@ -40,7 +40,7 @@ public class BlockedOutgoingDialogService extends Service {
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
 
         // Inflar com o tema do app (Material 3) para resolver os atributos
-        Context themedContext = new ContextThemeWrapper(this, R.style.Theme_ZikaVírus);
+        Context themedContext = new ContextThemeWrapper(this, R.style.Theme_Mosquito);
         LayoutInflater inflater = LayoutInflater.from(themedContext);
         overlayView = inflater.inflate(R.layout.dialog_blocked_outgoing, null);
 

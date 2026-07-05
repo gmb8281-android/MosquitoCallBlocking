@@ -1,4 +1,4 @@
-package com.marinov.zicavirus;
+package com.marinov.mosquito;
 
 import android.app.admin.DeviceAdminReceiver;
 import android.content.Context;
@@ -13,11 +13,11 @@ public class DeviceAdminReceiverImpl extends DeviceAdminReceiver {
 
     @Override
     public void onEnabled(Context context, Intent intent) {
-        Toast.makeText(context, "Zika Vírus: proteção de admin ativada.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Proteção de admin ativada.", Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onDisabled(Context context, Intent intent) {
-        Toast.makeText(context, "Zika Vírus: proteção de admin desativada.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Proteção de admin desativada.", Toast.LENGTH_SHORT).show();
     }
 }

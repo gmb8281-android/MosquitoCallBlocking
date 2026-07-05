@@ -1,10 +1,9 @@
-package com.marinov.zicavirus;
+package com.marinov.mosquito;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.admin.DevicePolicyManager;
-import android.app.NotificationManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -16,7 +15,6 @@ import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.ContactsContract;
 import android.provider.Settings;
-import android.telecom.TelecomManager;
 import android.view.View;
 
 import androidx.activity.result.ActivityResult;

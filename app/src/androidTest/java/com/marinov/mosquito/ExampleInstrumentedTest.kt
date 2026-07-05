@@ -1,4 +1,4 @@
-package com.marinov.zicavirus
+package com.marinov.mosquito
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

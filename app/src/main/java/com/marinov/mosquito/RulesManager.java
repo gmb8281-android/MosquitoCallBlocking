@@ -1,4 +1,4 @@
-package com.marinov.zicavirus;
+package com.marinov.mosquito;
 
 import android.content.Context;
 import android.content.SharedPreferences;

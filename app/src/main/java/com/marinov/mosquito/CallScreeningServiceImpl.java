@@ -1,10 +1,9 @@
-package com.marinov.zicavirus;
+package com.marinov.mosquito;
 
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.provider.CallLog;
